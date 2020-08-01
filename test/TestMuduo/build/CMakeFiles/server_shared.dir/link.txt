@@ -1,0 +1,1 @@
+/usr/bin/c++ -fPIC -g  -shared -Wl,-soname,libserver.so -o libserver.so CMakeFiles/server_shared.dir/muduo_server.cpp.o 
