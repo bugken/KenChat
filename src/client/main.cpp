@@ -112,9 +112,15 @@ int main(int argc, char** argv)
         cout << "3. quit" << endl;
         cout << "===============================" << endl;
         cout << "choice:";
-        int choice = 0;
-        cin >> choice;
-        cin.get();//读取缓冲区残留的回车
+        char input;
+        char throwaway[100] = {0};
+        cin.get(input);
+        if (!isdigit(input))
+        {
+            continue;
+        }
+        int choice = (int)input - 48;
+        cin.getline(throwaway, 50);//将剩下的字符读取扔掉，否则会影响业务的输入
         switch (choice)
         {
         case 1://login业务
