@@ -24,6 +24,10 @@ User g_currentUser;
 vector<User> g_currentUserFriendList;
 //记录当前登录用户的群组列表信息
 vector<Group> g_currentUserGroupList;
+//控制聊天主界面
+bool isMainMenuRuning = false;
+//控制读写成只启动一次
+bool isReadThreadStartUp = false;
 //显示当前登录成功用户的基本信息
 void showCurrentUserData();
 //接收线程
@@ -169,6 +173,7 @@ int main(int argc, char** argv)
                         {
                             User user;
                             json js;
+                            g_currentUserFriendList.clear();
                             vector<string> vecFriends = response["friends"];
                             for (string &str : vecFriends)
                             {
@@ -186,6 +191,7 @@ int main(int argc, char** argv)
                             Group group;
                             GroupUser groupUser;
                             vector<string> vecGroups = response["groups"];
+                            g_currentUserGroupList.clear();
                             for (string &str : vecGroups)
                             {
                                 jsgroups = json::parse(str);
@@ -206,9 +212,7 @@ int main(int argc, char** argv)
                                         group.getVecUsers().push_back(groupUser);
                                     }
                                 }
-                                
                                 g_currentUserGroupList.push_back(group);
-                                
                             }
                         }
                         
@@ -238,11 +242,16 @@ int main(int argc, char** argv)
                             }
                         }
 
-                        //登录成功后，启动接收线程负责接收数据
-                        std::thread readTask(readTaskHandler, clientfd);//C++11语言级创建线程函数，相当于pthread_create
-                        readTask.detach();//相当于pthread_detach
-
+                        //登录成功后，启动接收线程负责接收数据，该线程只启动一次
+                        if (false == isReadThreadStartUp)
+                        {
+                            std::thread readTask(readTaskHandler, clientfd);//C++11语言级创建线程函数，相当于pthread_create
+                            readTask.detach();//相当于pthread_detach
+                            isReadThreadStartUp = true;
+                        }
+                        
                         //进入聊天主页面
+                        isMainMenuRuning = true;
                         mainMenu(clientfd);
                     }
                 }
@@ -467,7 +476,21 @@ void groupchat(int clientfd, string msg)
 //loginout command handler
 void loginout(int clientfd, string msg)
 {
-    
+    json context;
+    context["msgid"] = LOGINOUT_MSG;
+    context["userid"] = g_currentUser.getId();
+    context["time"] = getCurrentTime();
+    string buffer = context.dump();
+
+    int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+    if (-1 == len)
+    {
+        cerr <<"send loginout msg error -> " << buffer << endl;
+        return;
+    }
+
+    //关闭用户聊天主界面
+    isMainMenuRuning = false;
 }
 //获取系统时间(聊天信息需要添加时间信息)
 string getCurrentTime()
@@ -485,7 +508,7 @@ void readTaskHandler(int clientfd)
     for (;;)
     {
         char buffer[1024] = {0};
-        int len = recv(clientfd, buffer, 1024, 0);
+        int len = recv(clientfd, buffer, 1024, 0);//阻塞等待
         if (-1 == len || 0 == len)
         {
             close(clientfd);
@@ -512,7 +535,7 @@ void mainMenu(int clientfd)
 {
     help();
     char buffer[1024] = {0};
-    for (;;)
+    while (isMainMenuRuning)
     {
         cin.getline(buffer, 1024);
         string commandBuf(buffer);

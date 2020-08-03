@@ -23,6 +23,7 @@ ChatService::ChatService()
 {
     _msgHandlerMap.insert(pair<int, MsgHandler>(LOGIN_MSG, bind(&ChatService::login, this, _1, _2, _3)));
     _msgHandlerMap.insert(pair<int, MsgHandler>(REG_MSG, bind(&ChatService::reg, this, _1, _2, _3)));
+    _msgHandlerMap.insert(pair<int, MsgHandler>(LOGINOUT_MSG, bind(&ChatService::loginout, this, _1, _2, _3)));
     _msgHandlerMap.insert(pair<int, MsgHandler>(ONE_CHAT_MSG, bind(&ChatService::oneChat, this, _1, _2, _3)));
     _msgHandlerMap.insert(pair<int, MsgHandler>(ADD_FRIEND_MSG, bind(&ChatService::addFriend, this, _1, _2, _3)));
     _msgHandlerMap.insert(pair<int, MsgHandler>(CREATE_GROUP_MSG, bind(&ChatService::createGroup, this, _1, _2, _3)));
@@ -223,6 +224,25 @@ void ChatService::reg(const TcpConnectionPtr &conn, json &js, Timestamp time)
 
     response["msgid"] = REG_MSG_ACK;
     conn->send(response.dump());
+}
+//注销消息
+void ChatService::loginout(const TcpConnectionPtr & conn, json &js, Timestamp time)
+{
+    int userid = js["userid"].get<int>();
+    {
+        lock_guard<mutex> lock(_connMutex);
+        auto it = _userConnMap.find(userid);
+        if (it != _userConnMap.end())
+        {
+            //删除长连接
+            _userConnMap.erase(it);
+            LOG_INFO << "user " << userid <<" loginout.";
+        }
+    }
+
+    //更新状态
+    User user(userid, "", "", "offline");
+    _userModel.updateState(user);
 }
 //添加好友
 void ChatService::addFriend(const TcpConnectionPtr & conn, json &js, Timestamp time)
