@@ -54,7 +54,7 @@ unordered_map<string, string> commandMap =
     {"addfriend", "添加好友，格式addfriend:friendid"},
     {"creategroup", "创建群组，格式creategroup:groupname:groupdesc"},
     {"joingroup", "加入群组，格式joingroup:groupid"},
-    {"groupchat", "群聊，格式addgroup:groupid:message"},
+    {"groupchat", "群聊，格式groupchat:groupid:message"},
     {"loginout", "注销，格式loginout"},
 };
 //注册系统支持的客户端命令处理
@@ -173,7 +173,6 @@ int main(int argc, char** argv)
                             for (string &str : vecFriends)
                             {
                                 js = json::parse(str);
-                                cout << "friends:" << str << endl;
                                 user.setId(js["id"].get<int>());
                                 user.setName(js["name"]);
                                 user.setState(js["state"]);
@@ -228,13 +227,13 @@ int main(int argc, char** argv)
                                 {
                                     cout << jsOfflineMessage["time"].get<string>() << " [" << jsOfflineMessage["id"] 
                                         << "]" << jsOfflineMessage["name"].get<string>() << " said:" 
-                                        << jsOfflineMessage["msg"].get<string>() << endl;
+                                        << jsOfflineMessage["message"].get<string>() << endl;
                                 }
                                 else
                                 {
                                     cout << "群消息[" << jsOfflineMessage["groupid"] << "]" << jsOfflineMessage["time"].get<string>() 
                                         << " [" << jsOfflineMessage["id"] << "]" << jsOfflineMessage["name"].get<string>() 
-                                        << " said:" << jsOfflineMessage["msg"].get<string>() << endl;
+                                        << " said:" << jsOfflineMessage["message"].get<string>() << endl;
                                 }
                             }
                         }
@@ -364,7 +363,7 @@ void chat(int clientfd, string msg)
     context["id"] = g_currentUser.getId();
     context["name"] = g_currentUser.getName();
     context["toid"] = friendid;
-    context["msg"] = message;
+    context["message"] = message;
     context["time"] = getCurrentTime();
     string buffer = context.dump();
 
@@ -451,7 +450,7 @@ void groupchat(int clientfd, string msg)
 
     json context;
     context["msgid"] = GROUP_CHAT_MSG;
-    context["id"] = g_currentUser.getId();
+    context["userid"] = g_currentUser.getId();
     context["name"] = g_currentUser.getName();
     context["groupid"] = groupid;
     context["message"] = message;
@@ -497,13 +496,13 @@ void readTaskHandler(int clientfd)
         if (ONE_CHAT_MSG == js["msgid"].get<int>())
         {
             cout << js["time"].get<string>() << " [" << js["id"] << "]" 
-                << js["name"].get<string>() << " said:" << js["msg"].get<string>() << endl;
+                << js["name"].get<string>() << " said:" << js["message"].get<string>() << endl;
             continue;
         }
         if (GROUP_CHAT_MSG == js["msgid"].get<int>())
         {
-            cout << "群消息[" << js["groupid"] << "]" << js["time"].get<string>() << " [" << js["id"] << "]" 
-                << js["name"].get<string>() << " said:" << js["msg"].get<string>() << endl;
+            cout << "群消息[" << js["groupid"] << "]" << js["time"].get<string>() << " [" << js["userid"].get<int>() << "]" 
+                << js["name"].get<string>() << " said:" << js["message"].get<string>() << endl;
             continue;
         }
     }

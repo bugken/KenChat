@@ -78,7 +78,7 @@ void ChatService::reset()
 void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time)
 {
     TcpConnectionPtr clientConn;
-    int toid = js["to"].get<int>();
+    int toid = js["toid"].get<int>();
 
     {
         lock_guard<mutex> lock(_connMutex);
@@ -93,6 +93,7 @@ void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time
     }
 
     //toid不在线，存储离线消息
+    LOG_INFO << "transfer offline information.";
     _offlineMsgModel.insert(toid, js.dump());
 }
 //处理登录业务
@@ -291,6 +292,7 @@ void ChatService::groupChat(const TcpConnectionPtr &conn, json &js, Timestamp ti
                 continue;
             }
             //userid不在线，存储离线消息
+            LOG_INFO << "transfer offline information.";
             _offlineMsgModel.insert(userid, js.dump());
         }
     }
