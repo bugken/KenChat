@@ -73,8 +73,8 @@ vector<Group> GroupModel::queryGroups(int userid)
     GroupUser groupUser;
     for (Group& group : vecGroup)
     {
-        sprintf(sql, "select a.id, a.name, a.state b.grouprole from User a inner join GroupUser b \
-                on a.id = b.userid where b.groupid = %d", group.getId());
+        sprintf(sql, "select a.id, a.name, a.state from User a inner join GroupUser b \
+                        on a.id = b.userid where b.groupid = %d;", group.getId());
 
         MYSQL_RES *res = mysql.query(sql);
         if (res != nullptr)

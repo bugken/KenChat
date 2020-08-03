@@ -149,7 +149,38 @@ void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
             }
             //读取用户的离线消息后删除离线消息
             _offlineMsgModel.remove(user.getId());
-            
+
+         	//查询用户所在的组以及组成员
+            vector<Group> vecGroup = _groupModel.queryGroups(user.getId());
+            if (!vecGroup.empty())
+            {
+                json jsGroup, jsUses;
+                vector<string> vecMsg, vecStrUsers;;
+                GroupUser groupUser;
+                vector<GroupUser> vectUsers;
+                for (Group& group : vecGroup)
+                {
+                    jsGroup["id"] = group.getId();
+                    jsGroup["groupname"] = group.getName();
+                    jsGroup["groupdesc"] = group.getDesc();
+                    vectUsers = group.getVecUsers();
+                    if (!vectUsers.empty())
+                    {
+                        for (GroupUser & var : vectUsers)
+                        {
+                            jsUses["id"] = var.getId();
+                            jsUses["name"] = var.getName();
+                            jsUses["state"] = var.getState();
+                            jsUses["role"] = var.getRole();
+                            vecStrUsers.push_back(jsUses.dump());
+                        }
+                        jsGroup["users"] = vecStrUsers;
+                    }
+                    vecMsg.push_back(jsGroup.dump());
+                }
+                response["groups"] = vecMsg;
+            }   
+
             //登录成功，更新用户状态
             user.setState("online");
             _userModel.updateState(user);
@@ -228,9 +259,9 @@ void ChatService::createGroup(const TcpConnectionPtr & conn, json &js, Timestamp
 void ChatService::joinGroup(const TcpConnectionPtr & conn, json &js, Timestamp time)
 {
     int userid = js["userid"].get<int>();
-    int friendid = js["friendid"].get<int>();
+    int groupid = js["groupid"].get<int>();
 
-    if(_groupModel.joinGroup(userid, friendid, "normal"))
+    if(_groupModel.joinGroup(userid, groupid, "normal"))
     {
         LOG_INFO << "加入群组成功.";
     }

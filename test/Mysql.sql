@@ -16,7 +16,7 @@ CREATE TABLE AllGroup(
 );
 
 CREATE TABLE GroupUser(
-	groupid INTEGER PRIMARY KEY,
+	groupid INTEGER NOT NULL,
 	userid INTEGER NOT NULL,
     grouprole ENUM('creator', 'normal') DEFAULT 'normal'
 );

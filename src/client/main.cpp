@@ -54,7 +54,7 @@ unordered_map<string, string> commandMap =
     {"addfriend", "添加好友，格式addfriend:friendid"},
     {"creategroup", "创建群组，格式creategroup:groupname:groupdesc"},
     {"joingroup", "加入群组，格式joingroup:groupid"},
-    {"groupchat", "群聊，格式addgroup:groupid"},
+    {"groupchat", "群聊，格式addgroup:groupid:message"},
     {"loginout", "注销，格式loginout"},
 };
 //注册系统支持的客户端命令处理
@@ -164,7 +164,6 @@ int main(int argc, char** argv)
                         //登录当前用户的id和name
                         g_currentUser.setId(response["id"].get<int>());
                         g_currentUser.setName(response["name"]);
-
                         //记录当前用户的好友列表信息
                         if (response.contains("friends"))
                         {
@@ -174,13 +173,13 @@ int main(int argc, char** argv)
                             for (string &str : vecFriends)
                             {
                                 js = json::parse(str);
+                                cout << "friends:" << str << endl;
                                 user.setId(js["id"].get<int>());
                                 user.setName(js["name"]);
                                 user.setState(js["state"]);
                                 g_currentUserFriendList.push_back(user);
                             }
                         }
-
                         //记录当前用户的群组列表信息
                         if (response.contains("groups"))
                         {
@@ -195,18 +194,22 @@ int main(int argc, char** argv)
                                 group.setName(jsgroups["groupname"]);
                                 group.setDesc(jsgroups["groupdesc"]);
 
-                                vector<string> vecGroupUsers = jsgroups["users"];
-                                for (string &userstr : vecGroupUsers)
+                                if (jsgroups.contains("users"))
                                 {
-                                    json jsgroupusers = json::parse(userstr);
-                                    groupUser.setId(jsgroupusers["id"].get<int>());
-                                    groupUser.setName(jsgroupusers["name"]);
-                                    groupUser.setName(jsgroupusers["state"]);
-                                    groupUser.setName(jsgroupusers["fole"]);
-                                    group.getVecUsers().push_back(groupUser);
+                                    vector<string> vecGroupUsers = jsgroups["users"];
+                                    for (string &userstr : vecGroupUsers)
+                                    {
+                                        json jsgroupusers = json::parse(userstr);
+                                        groupUser.setId(jsgroupusers["id"].get<int>());
+                                        groupUser.setName(jsgroupusers["name"]);
+                                        groupUser.setName(jsgroupusers["state"]);
+                                        groupUser.setName(jsgroupusers["fole"]);
+                                        group.getVecUsers().push_back(groupUser);
+                                    }
                                 }
-            
+                                
                                 g_currentUserGroupList.push_back(group);
+                                
                             }
                         }
                         
@@ -221,8 +224,18 @@ int main(int argc, char** argv)
                             for (string &offlinemsg : vecOfflinemessage)
                             {
                                 jsOfflineMessage = json::parse(offlinemsg);
-                                cout << jsOfflineMessage["time"] << " [" << jsOfflineMessage["id"] << "]" << js["name"] 
-                                <<" said:" << jsOfflineMessage["msg"] << endl;
+                                if (ONE_CHAT_MSG == jsOfflineMessage["msgid"].get<int>())
+                                {
+                                    cout << jsOfflineMessage["time"].get<string>() << " [" << jsOfflineMessage["id"] 
+                                        << "]" << jsOfflineMessage["name"].get<string>() << " said:" 
+                                        << jsOfflineMessage["msg"].get<string>() << endl;
+                                }
+                                else
+                                {
+                                    cout << "群消息[" << jsOfflineMessage["groupid"] << "]" << jsOfflineMessage["time"].get<string>() 
+                                        << " [" << jsOfflineMessage["id"] << "]" << jsOfflineMessage["name"].get<string>() 
+                                        << " said:" << jsOfflineMessage["msg"].get<string>() << endl;
+                                }
                             }
                         }
 
@@ -316,7 +329,7 @@ void showCurrentUserData()
             cout << group.getId() << " " << group.getName() << " " << group.getDesc() << endl;
             for (GroupUser &user : group.getVecUsers())
             {
-                cout << user.getId() << " " << user.getName() << " " << user.getState() << " " << user.getRole() <<endl;
+                cout << user.getId() << " " << user.getName() << " " << user.getState() << " " << user.getRole() << endl;
             }
         }
         
@@ -333,7 +346,7 @@ void help(int fd = 0, string str = "")
         cout << cmd.first << " : " << cmd.second << endl;
     }
 }
-//chat command handler
+//chat command handler chat:friendid:message
 void chat(int clientfd, string msg)
 {
     int idx = msg.find(":");
@@ -362,7 +375,7 @@ void chat(int clientfd, string msg)
         return;
     }
 }
-//addfriend command handler
+//addfriend command handler addfriend:friendid
 void addfriend(int clientfd, string msg)
 {
     int friendid = atoi(msg.c_str());
@@ -378,20 +391,79 @@ void addfriend(int clientfd, string msg)
         cerr << "send addfriend msg error -> " << buffer << endl;
     }
 }
-//creategroup command handler
+//creategroup command handler creategroup:groupname:groupdesc
 void creategroup(int clientfd, string msg)
 {
-    
+    int idx = msg.find(":");
+    if (-1 == idx)
+    {
+        cerr << "create group command invalid." << endl;
+        return ;
+    }
+    string groupname = msg.substr(0, idx);
+    string groupdesc = msg.substr(idx + 1, msg.size() - idx);
+
+    json context;
+    context["msgid"] = CREATE_GROUP_MSG;
+    context["id"] = g_currentUser.getId();
+    context["groupname"] = groupname;
+    context["groupdesc"] = groupdesc;
+    context["time"] = getCurrentTime();
+    string buffer = context.dump();
+
+    int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+    if (-1 == len)
+    {
+        cerr <<"send creategroup msg error -> " << buffer << endl;
+        return;
+    }
 }
-//joingroup command handler
+//joingroup command handler groupid
 void joingroup(int clientfd, string msg)
 {
-    
+    int groupid = atoi(msg.c_str());
+
+    json context;
+    context["msgid"] = JOIN_GROUP_MSG;
+    context["userid"] = g_currentUser.getId();
+    context["groupid"] = groupid;
+    context["time"] = getCurrentTime();
+    string buffer = context.dump();
+
+    int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+    if (-1 == len)
+    {
+        cerr <<"send joingroup msg error -> " << buffer << endl;
+        return;
+    }
 }
-//groupchat command handler
+//groupchat command handler groupid:message
 void groupchat(int clientfd, string msg)
 {
-    
+    int idx = msg.find(":");
+    if (-1 == idx)
+    {
+        cerr << "groupchat command invalid." << endl;
+        return ;
+    }
+    int groupid = atoi(msg.substr(0, idx).c_str());
+    string message = msg.substr(idx + 1, msg.size() - idx);
+
+    json context;
+    context["msgid"] = GROUP_CHAT_MSG;
+    context["id"] = g_currentUser.getId();
+    context["name"] = g_currentUser.getName();
+    context["groupid"] = groupid;
+    context["message"] = message;
+    context["time"] = getCurrentTime();
+    string buffer = context.dump();
+
+    int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+    if (-1 == len)
+    {
+        cerr <<"send groupchat msg error -> " << buffer << endl;
+        return;
+    }
 }
 //loginout command handler
 void loginout(int clientfd, string msg)
@@ -426,6 +498,13 @@ void readTaskHandler(int clientfd)
         {
             cout << js["time"].get<string>() << " [" << js["id"] << "]" 
                 << js["name"].get<string>() << " said:" << js["msg"].get<string>() << endl;
+            continue;
+        }
+        if (GROUP_CHAT_MSG == js["msgid"].get<int>())
+        {
+            cout << "群消息[" << js["groupid"] << "]" << js["time"].get<string>() << " [" << js["id"] << "]" 
+                << js["name"].get<string>() << " said:" << js["msg"].get<string>() << endl;
+            continue;
         }
     }
 }
