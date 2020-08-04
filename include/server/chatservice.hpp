@@ -7,6 +7,7 @@
 #include <functional>
 #include "json.hpp"
 #include "usermodel.hpp"
+#include "redis.hpp"
 #include "offlinemessagemodel.hpp"
 #include "friendmodel.hpp"
 #include "groupmodel.hpp"
@@ -41,6 +42,8 @@ public:
     void joinGroup(const TcpConnectionPtr & conn, json &js, Timestamp time);
     //群聊
     void groupChat(const TcpConnectionPtr & conn, json &js, Timestamp time);
+    //从redis消息队列中取订阅的消息
+    void handleRedisSubscibeMessage(int userid, string msg);
     //获取消息对应的处理器
     MsgHandler getHandler(int msgid);
     //客户端异常断开时处理函数
@@ -61,6 +64,9 @@ private:
     OfflineMsgModel _offlineMsgModel;
     FriendModel _friendModel;
     GroupModel _groupModel;
+
+    //Redis操作对象
+    Redis _redis;
 };
 
 #endif
