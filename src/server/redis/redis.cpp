@@ -64,7 +64,7 @@ bool Redis::publish(int channel, string message)
 //向redis指定通道subscribe订阅消息
 bool Redis::subscribe(int channel)
 {
-//SUBSCRIBE命令本身会造成线程阻塞等待通道里面发生消息，这里只做订阅通道，不接收通道消息
+    //SUBSCRIBE命令本身会造成线程阻塞等待通道里面发生消息，这里只做订阅通道，不接收通道消息
     //通道消息的接收专门在observer_channel_message函数中的独立线程中进行
     //值负责发送命令，不阻塞接收redis server相应消息，否则和notifyMsg线程抢占响应资源
     if (REDIS_ERR == redisAppendCommand(this->_subscribe_context, "SUBSCRIBE %d", channel))
@@ -73,7 +73,7 @@ bool Redis::subscribe(int channel)
         return false;
     }
 
-     //redisBufferWrite可以循环发送缓冲区，知道缓冲区数据发送完毕(done被重置为1)
+    //redisBufferWrite可以循环发送缓冲区，直到缓冲区数据发送完毕(done被重置为1)
     int done = 0;
     while (!done)
     {
@@ -95,7 +95,7 @@ bool Redis::unsubscribe(int channel)
         return false;
     }
 
-//redisBufferWrite可以循环发送缓冲区，知道缓冲区数据发送完毕(done被重置为1)
+    //redisBufferWrite可以循环发送缓冲区，直到缓冲区数据发送完毕(done被重置为1)
     int done = 0;
     while (!done)
     {
