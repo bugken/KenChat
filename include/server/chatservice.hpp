@@ -8,6 +8,7 @@
 #include "json.hpp"
 #include "usermodel.hpp"
 #include "redis.hpp"
+#include "http.hpp"
 #include "offlinemessagemodel.hpp"
 #include "friendmodel.hpp"
 #include "groupmodel.hpp"
@@ -50,6 +51,8 @@ public:
     void clientCloseException(const TcpConnectionPtr & conn);
     //服务器异常业务充值方法
     void reset();
+    //封装成http消息发出
+    void sendWithHttp(const TcpConnectionPtr &conn, string jsonBuff);
 private:
     ChatService();
     //存储消息ID和其对应的业务处理方法，此成员不需要线程安全，因为启动时候已经初始化好

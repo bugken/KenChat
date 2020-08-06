@@ -1,6 +1,8 @@
 #include "chatserver.hpp"
 #include "chatservice.hpp"
 #include "json.hpp"
+#include "http.hpp"
+#include <iostream>
 #include <functional>
 #include <string>
 #include <muduo/base/Logging.h>
@@ -45,12 +47,14 @@ void ChatServer::OnConnection(const TcpConnectionPtr &conn)
 //上报读写事件相关信息的回调函数
  void ChatServer::OnMessage(const TcpConnectionPtr &conn, Buffer *buffer, Timestamp time)
  {
-     string buf = buffer->retrieveAllAsString();
+     string jsonBuff;
+     string receiveBuf = buffer->retrieveAllAsString();
+     HttpHandle::instance()->parseHttpMessage(receiveBuf, jsonBuff);
      //数据反序列化
      json js;
      try
      {
-        js = json::parse(buf);
+        js = json::parse(jsonBuff);
      }
      catch(json::exception& e)
      {

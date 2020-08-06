@@ -7,6 +7,7 @@
 #include "usermodel.hpp"
 #include "friendmodel.hpp"
 #include "groupmodel.hpp"
+#include <iostream>
 
 using namespace std;
 using namespace placeholders;
@@ -218,7 +219,7 @@ void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
     }
 
     response["msgid"] = LOGIN_MSG_ACK;
-    conn->send(response.dump());
+    sendWithHttp(conn, response.dump());
 }
 //处理注册业务
 void ChatService::reg(const TcpConnectionPtr &conn, json &js, Timestamp time)
@@ -364,4 +365,12 @@ void ChatService::handleRedisSubscibeMessage(int userid, string msg)
     }
     //存储该用户的离线消息
     _offlineMsgModel.insert(userid, msg);
+}
+//封装成http消息发出
+void ChatService::sendWithHttp(const TcpConnectionPtr &conn, string jsonBuff)
+{
+    string httpResponse;
+    HttpHandle::instance()->buildHttpResponse(jsonBuff, httpResponse);
+    
+    conn->send(httpResponse);
 }

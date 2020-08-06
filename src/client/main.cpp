@@ -14,6 +14,7 @@
 #include "group.hpp"
 #include "user.hpp"
 #include "public.hpp"
+#include "http.hpp"
 
 using namespace std;
 using json=nlohmann::json;
@@ -34,6 +35,10 @@ void showCurrentUserData();
 void readTaskHandler(int clientfd);
 //获取系统时间(聊天信息需要添加时间信息)
 string getCurrentTime();
+//封装成http包并发送
+int sendWithHttp(int clientfd, string& jsonBuff);
+//解析收到的http包
+int recvParser(int clientfd, string& jsonBuffer);
 //主聊天页面程序
 void mainMenu(int clientfd);
 //help command handler
@@ -143,22 +148,22 @@ int main(int argc, char** argv)
             js["password"] = pwd;
             string request = js.dump();
 
-            int len = send(clientfd, request.c_str(), strlen(request.c_str()) + 1, 0);
+            int len = sendWithHttp(clientfd, request);
             if (-1 == len)
             {
                 cerr << "send login msg error." << endl;
             }
             else
             {
-                char buffer[1024] = {0};
-                len = recv(clientfd, buffer, 1024, 0);
+                string jsonBuffer;
+                len = recvParser(clientfd, jsonBuffer);
                 if (-1 == len)
                 {
                     cerr << "recv login response error." << endl;
                 }
                 else
                 {
-                    json response = json::parse(buffer);
+                    json response = json::parse(jsonBuffer);
                     if (0 != response["errno"].get<int>())//登录失败
                     {
                         cerr << response["errmsg"] << endl;
@@ -273,22 +278,22 @@ int main(int argc, char** argv)
             js["password"] = pwd;
             string request = js.dump();
 
-            int len = send(clientfd, request.c_str(), strlen(request.c_str()) + 1, 0);
+            int len = sendWithHttp(clientfd, request);
             if (len == -1)
             {
                 cerr << "send reg msg error:" << request << endl;
             }
             else
             {
-                char buffer[1024] = {0};
-                len = recv(clientfd, buffer, 1024, 0);
+                string jsonBuffer;
+                len = recvParser(clientfd, jsonBuffer);
                 if(len == -1)
                 {
                     cerr << "recv reg response error." << endl;
                 }
                 else
                 {
-                    json response = json::parse(buffer);
+                    json response = json::parse(jsonBuffer);
                     if (0 != response["errno"].get<int>())//注册失败
                     {
                         cerr << name << " is already exist, register error." << endl;
@@ -376,7 +381,7 @@ void chat(int clientfd, string msg)
     context["time"] = getCurrentTime();
     string buffer = context.dump();
 
-    int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+    int len = sendWithHttp(clientfd, buffer);
     if (-1 == len)
     {
         cerr <<"send chat msg error -> " << buffer << endl;
@@ -393,7 +398,7 @@ void addfriend(int clientfd, string msg)
     context["friendid"] = friendid;
     string buffer = context.dump();
 
-    int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+    int len = sendWithHttp(clientfd, buffer);
     if(-1 == len)
     {
         cerr << "send addfriend msg error -> " << buffer << endl;
@@ -419,7 +424,7 @@ void creategroup(int clientfd, string msg)
     context["time"] = getCurrentTime();
     string buffer = context.dump();
 
-    int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+    int len = sendWithHttp(clientfd, buffer);
     if (-1 == len)
     {
         cerr <<"send creategroup msg error -> " << buffer << endl;
@@ -438,7 +443,7 @@ void joingroup(int clientfd, string msg)
     context["time"] = getCurrentTime();
     string buffer = context.dump();
 
-    int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+    int len = sendWithHttp(clientfd, buffer);
     if (-1 == len)
     {
         cerr <<"send joingroup msg error -> " << buffer << endl;
@@ -466,7 +471,7 @@ void groupchat(int clientfd, string msg)
     context["time"] = getCurrentTime();
     string buffer = context.dump();
 
-    int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+    int len = sendWithHttp(clientfd, buffer);
     if (-1 == len)
     {
         cerr <<"send groupchat msg error -> " << buffer << endl;
@@ -482,7 +487,7 @@ void loginout(int clientfd, string msg)
     context["time"] = getCurrentTime();
     string buffer = context.dump();
 
-    int len = send(clientfd, buffer.c_str(), strlen(buffer.c_str()) + 1, 0);
+    int len = sendWithHttp(clientfd, buffer);
     if (-1 == len)
     {
         cerr <<"send loginout msg error -> " << buffer << endl;
@@ -507,15 +512,15 @@ void readTaskHandler(int clientfd)
 {
     for (;;)
     {
-        char buffer[1024] = {0};
-        int len = recv(clientfd, buffer, 1024, 0);//阻塞等待
+        string jsonBuffer;
+        int len = recvParser(clientfd, jsonBuffer);
         if (-1 == len || 0 == len)
         {
             close(clientfd);
             exit(-1);
         }
         //接收ChatServer转发的数据，反序列化生成json数据对象
-        json js = json::parse(buffer);
+        json js = json::parse(jsonBuffer);
         if (ONE_CHAT_MSG == js["msgid"].get<int>())
         {
             cout << js["time"].get<string>() << " [" << js["id"] << "]" 
@@ -529,6 +534,24 @@ void readTaskHandler(int clientfd)
             continue;
         }
     }
+}
+//封装成http包并发送
+int sendWithHttp(int clientfd, string& jsonBuff)
+{
+    string httpResponse;
+    HttpHandle::instance()->buildHttpResquest(jsonBuff, httpResponse);
+    int len = send(clientfd, httpResponse.c_str(), strlen(httpResponse.c_str()), 0);
+
+    return len;
+}
+//解析收到的http包
+int recvParser(int clientfd, string& jsonBuffer)
+{
+    char buffer[1024] = {0};
+    int len = recv(clientfd, buffer, 1024, 0);
+    string recvBuff = string(buffer);
+    HttpHandle::instance()->parseHttpMessage(recvBuff, jsonBuffer);  
+    return len;
 }
 //主聊天页面程序
 void mainMenu(int clientfd)
