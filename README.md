@@ -46,5 +46,17 @@
         6.2.1 进入build目录
         6.2.2 执行cmake ..生成Makefile文件
         6.2.3 make生成可执行文件
+
+7.服务启动以及环境检查
+    chat服务需要启动mysql数据库来存储数据，需要redis服务进行跨服务器通信，需要Nginx服务反向代理进行负载均衡，所以在启动chat服务前需要确认mysql、redis、Nginx服务和端口是否启动。
+    7.1 Nginx端口检查 netstat -tanp| grep 8000
+    7.2 redis端口检查 netstat -tanp| grep 6379
+    7.3 Nginx服务检查 ps -ef |grep nginx
+    7.4 mysql服务检查 ps -ef |grep mysql
+    7.5 redis服务检查 ps -ef |grep redis
+    7.6 启动nginx服务 进入目录/usr/local/nginx/sbin 启动:./nginx 重启:./nginx -s reload 关闭:./nginx -s stop
+    7.7 启动redis服务 /usr/bin/redis-server
+    7.8 启动mysql服务 /usr/bin/mysql
+
  x.遗留问题
     x.1实现客户端非Http通信，Web使用Http通信，需要在服务端区分二者
