@@ -30,7 +30,7 @@
             border:solid 1px;
             background:rgba(0, 0, 0, 0);
         }
-        #LinkBtnRegister{
+        #LinkBtnToRegister{
             text-decoration:none;
             margin-left:230px; 
         }
