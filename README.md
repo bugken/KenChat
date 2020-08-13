@@ -57,6 +57,7 @@
     7.6 启动nginx服务 进入目录/usr/local/nginx/sbin 启动:./nginx 重启:./nginx -s reload 关闭:./nginx -s stop
     7.7 启动redis服务 /usr/bin/redis-server
     7.8 启动mysql服务 /usr/bin/mysql
+    7.9 启动Chat服务 服务端:./ChatServer 127.0.0.1 6000 客户端:./ChatClient 127.0.0.1 8000
 
  x.遗留问题
     x.1实现客户端非Http通信，Web使用Http通信，需要在服务端区分二者
