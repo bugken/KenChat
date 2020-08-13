@@ -16,11 +16,11 @@ namespace ChatClient
         {
 
         }
-        protected void linkToLogin_Click(object sender, EventArgs e)
+        protected void BtnLinkToLoginClick(object sender, EventArgs e)
         {
             Response.Redirect("Login.aspx");
         }
-        protected void btnRegister_Click(object sender, EventArgs e)
+        protected void BtnRegisterClick(object sender, EventArgs e)
         {
             Response.Write("btnRegister_Click!");
         }

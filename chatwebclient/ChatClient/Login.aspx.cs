@@ -33,7 +33,6 @@ namespace ChatClient
                     id = 1,
                     password = "123456"
                 });
-                System.Diagnostics.Debug.WriteLine(json);
                 streamWriter.Write(json);
                 streamWriter.Flush();
                 streamWriter.Close();
@@ -45,7 +44,6 @@ namespace ChatClient
             {
                 retString = streamReader.ReadToEnd();
             }
-            System.Diagnostics.Debug.WriteLine(retString);
             return retString;
         }
         private string SendHttpRequest2()
@@ -76,7 +74,6 @@ namespace ChatClient
             {
                 retString = streamReader.ReadToEnd();
             }
-            System.Diagnostics.Debug.WriteLine(retString);
             return retString;
         }
         private string SendHttpRequest3()
@@ -97,14 +94,16 @@ namespace ChatClient
         {
 
         }
-        protected void Button1_Click(object sender, EventArgs e)
+        protected void BtnLoginClick(object sender, EventArgs e)
         {
-            Response.Write("Button1_Click");
-            System.Diagnostics.Debug.WriteLine("111200000011111");
+            System.Diagnostics.Debug.WriteLine("BtnLoginClick");
+            Response.Write("BtnLoginClick");
             SendHttpRequest3();
         }
-        protected void LinkButton1_Click(object sender, EventArgs e)
+        protected void LinkBtnToRegisterClick(object sender, EventArgs e)
         {
+            System.Diagnostics.Debug.WriteLine("BtnLoginClick");
+            Response.Write("LinkBtnToRegisterClick");
             Response.Redirect("Register.aspx");
         }
     }
