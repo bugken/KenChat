@@ -50,6 +50,11 @@ void ChatServer::OnConnection(const TcpConnectionPtr &conn)
      string jsonBuff;
      string receiveBuf = buffer->retrieveAllAsString();
      HttpHandle::instance()->parseHttpMessage(receiveBuf, jsonBuff);
+
+    /*当为HTTP头的时候，没有json数据*/
+     if (jsonBuff.length() == 0)
+        return;
+
      //数据反序列化
      json js;
      try

@@ -17,7 +17,7 @@ HttpHandle* HttpHandle::instance()
 bool HttpHandle::parseHttpMessage(string& httpBuff, string& jsonBuff)
 {
 	/*如果没有HTTP信息，那么就当做纯json数据*/
-	if (0 != httpBuff.find("Content-Length: "))
+	if (httpBuff.npos == httpBuff.find("Content-Length: "))
 	{
 		jsonBuff = httpBuff;
 	}
