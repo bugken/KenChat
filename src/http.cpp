@@ -16,6 +16,12 @@ HttpHandle* HttpHandle::instance()
 //服务端解析客户端发来的HTTP请求包包
 bool HttpHandle::parseHttpMessage(string& httpBuff, string& jsonBuff)
 {
+	/*如果没有HTTP信息，那么就当做纯json数据*/
+	if (0 != httpBuff.find("Content-Length: "))
+	{
+		jsonBuff = httpBuff;
+	}
+	
 #if 0
 	//该方法没有验证
 	//string函数解析http包，没有校验
