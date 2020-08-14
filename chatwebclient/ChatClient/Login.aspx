@@ -51,7 +51,7 @@
     <form id="form1" runat="server">
         <div>
             <div>
-                <span id="spanuser">用户名:</span>
+                <span id="spanuser">用户ID:</span>
                 <asp:TextBox ID="UserName" runat="server" CssClass="textbox" Height="30px" Width="240px"></asp:TextBox>
             </div>
 

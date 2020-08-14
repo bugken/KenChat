@@ -8,20 +8,45 @@ using System.Net;
 using System.IO;
 using System.Web.Script.Serialization;
 using System.Text;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 
 namespace ChatClient
 {
-    public class LoginInfo
+    class LoginInfo
     {
         public int msgid { get; set; }
         public int id { get; set; }
         public string password { get; set; }
     }
+    class LoginReplyInfo
+    {
+        public int errno { get; set; }
+        public string errmsg { get; set; }
+        public int msgid { get; set; }
+        public int id { get; set; }
+        public string name { get; set; }
+        /*Note:服务端返回friend信息是字符串的形式*/
+        public List<string> friends { get; set; }
+        /*Note:服务端返回group信息是字符串的形式*/
+        public List<string> groups { get; set; }
+    }
+    class FriendsInfo
+    {
+        public int id { get; set; }
+        public string name { get; set; }
+        public string state { get; set; }
+    }
+    public class GroupsInfo
+    {
+        public int id { get; set; }
+        public string groupname { get; set; }
+        public string groupdesc { get; set; }
+    }
     public partial class Login : System.Web.UI.Page
     {
         private string URLs = "http://192.168.107.128:8000";
-        private string JsonStr = "{\"msgid\":1,\"id\":1, \"password\":\"123456\"}";
-        private JavaScriptSerializer Jss;
+        private JavaScriptSerializer JsonParserJss;
         private LoginInfo loginInfo;
         private HttpWebRequest httpWebRequest;
         public Login()
@@ -29,9 +54,9 @@ namespace ChatClient
             System.Diagnostics.Debug.WriteLine("Login");
             loginInfo = new LoginInfo();
             loginInfo.msgid = 1;
-            loginInfo.id = 1;
+            loginInfo.id = 3;
             loginInfo.password = "123456";
-            Jss = new JavaScriptSerializer();
+            JsonParserJss = new JavaScriptSerializer();
 
             httpWebRequest = (HttpWebRequest)WebRequest.Create(URLs);
             httpWebRequest.Method = "POST";
@@ -50,7 +75,7 @@ namespace ChatClient
             bool Result = true;
             using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
             {
-                string json = Jss.Serialize(loginInfo);
+                string json = JsonParserJss.Serialize(loginInfo);
                 streamWriter.Write(json);
                 streamWriter.Flush();
                 streamWriter.Close();
@@ -77,7 +102,7 @@ namespace ChatClient
             System.Diagnostics.Debug.WriteLine("LoginByHttpWebRequestAndWrite");
 
             bool Result = true;
-            string json = Jss.Serialize(loginInfo);
+            string json = JsonParserJss.Serialize(loginInfo);
             byte[] postBytes = Encoding.ASCII.GetBytes(json);
             httpWebRequest.ContentLength = postBytes.Length;
 
@@ -108,7 +133,7 @@ namespace ChatClient
 
             bool Result = true;
             WebClient client = new WebClient();
-            byte[] jsonData = Encoding.UTF8.GetBytes(JsonStr);
+            byte[] jsonData = Encoding.UTF8.GetBytes(JsonParserJss.Serialize(loginInfo));
             client.Headers.Add("Content-Type", "application/json"); //采取POST方式必须加的header
             client.Headers.Add("ContentLength", jsonData.Length.ToString());
             try
@@ -134,13 +159,44 @@ namespace ChatClient
         {
             System.Diagnostics.Debug.WriteLine("BtnLoginClick");
 
+            //获取用户名密码
+
             string DataBuff = "";
-            //if (LoginByWebClient(ref DataBuff))
-            if (LoginByHttpWebRequestAndWrite(ref DataBuff))
+            if (LoginByWebClient(ref DataBuff))
+            //if (LoginByHttpWebRequestAndWrite(ref DataBuff))
             //if (LoginByHttpWebRequestAndStream(ref DataBuff))
             {
+                /*解析Json数据，并进入聊天Lobby*/
+                System.Diagnostics.Debug.WriteLine(DataBuff);
                 Response.Write(DataBuff);
-                Response.Write("BtnLoginClick Success");
+                //LoginReplyInfo LoginReplyData = JsonParserJss.Deserialize<LoginReplyInfo>(DataBuff);
+                LoginReplyInfo LoginReplyData = JsonConvert.DeserializeObject<LoginReplyInfo>(DataBuff);
+                System.Diagnostics.Debug.WriteLine(LoginReplyData.errno);
+                if (LoginReplyData.errno == 0)
+                {
+                    if (LoginReplyData.friends != null)
+                    {
+                        List<string> Friends = LoginReplyData.friends;
+                        foreach (string Item in Friends)
+                        {
+                            //FriendsInfo fellow = JsonParserJss.Deserialize<FriendsInfo>(Item);
+                            FriendsInfo fellow = JsonConvert.DeserializeObject<FriendsInfo>(Item);
+                        }
+                    }
+                    if (LoginReplyData.groups != null)
+                    {
+                        List<string> Groups = LoginReplyData.groups;
+                        foreach (string Item in Groups)
+                        {
+                            //GroupsInfo group = JsonParserJss.Deserialize<GroupsInfo>(Item);
+                            GroupsInfo group = JsonConvert.DeserializeObject<GroupsInfo>(Item);
+                        }
+                    }
+                }
+                else 
+                {
+                    Response.Write("<script>alert('" + LoginReplyData.errmsg + "')</script>");
+                }
             }
             else 
             {

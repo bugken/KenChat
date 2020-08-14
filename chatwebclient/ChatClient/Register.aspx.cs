@@ -23,6 +23,10 @@ namespace ChatClient
         protected void BtnRegisterClick(object sender, EventArgs e)
         {
             Response.Write("btnRegister_Click!");
+            /*读取输入信息*/
+            /*注册信息*/
+            /*解析Json*/
+            /*注册成功返回UserID并且转到Lobby*/
         }
         protected void CustomValidator1_ServerValidate(object source, System.Web.UI.WebControls.ServerValidateEventArgs args)
         {
