@@ -54,7 +54,7 @@ namespace ChatClient
             System.Diagnostics.Debug.WriteLine("Login");
             loginInfo = new LoginInfo();
             loginInfo.msgid = 1;
-            loginInfo.id = 3;
+            loginInfo.id = 0;
             loginInfo.password = "123456";
             JsonParserJss = new JavaScriptSerializer();
 
@@ -158,8 +158,9 @@ namespace ChatClient
         protected void BtnLoginClick(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("BtnLoginClick");
-
-            //获取用户名密码
+        
+            loginInfo.id = int.Parse(UserName.Text);
+            loginInfo.password = Password.Text;
 
             string DataBuff = "";
             if (LoginByWebClient(ref DataBuff))
@@ -168,10 +169,8 @@ namespace ChatClient
             {
                 /*解析Json数据，并进入聊天Lobby*/
                 System.Diagnostics.Debug.WriteLine(DataBuff);
-                Response.Write(DataBuff);
                 //LoginReplyInfo LoginReplyData = JsonParserJss.Deserialize<LoginReplyInfo>(DataBuff);
                 LoginReplyInfo LoginReplyData = JsonConvert.DeserializeObject<LoginReplyInfo>(DataBuff);
-                System.Diagnostics.Debug.WriteLine(LoginReplyData.errno);
                 if (LoginReplyData.errno == 0)
                 {
                     if (LoginReplyData.friends != null)
@@ -192,6 +191,7 @@ namespace ChatClient
                             GroupsInfo group = JsonConvert.DeserializeObject<GroupsInfo>(Item);
                         }
                     }
+                    Response.Redirect("ChatLobby.aspx");
                 }
                 else 
                 {
