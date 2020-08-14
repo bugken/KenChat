@@ -246,7 +246,7 @@ void ChatService::reg(const TcpConnectionPtr &conn, json &js, Timestamp time)
     }
 
     response["msgid"] = REG_MSG_ACK;
-    conn->send(response.dump());
+    sendWithHttp(conn, response.dump());
 }
 //注销消息
 void ChatService::loginout(const TcpConnectionPtr & conn, json &js, Timestamp time)
