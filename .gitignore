@@ -1,1 +1,6 @@
+.gitignore
 .vscode/
+bin/*
+build/*
+chatwebclient/ChatClient/bin/*
+chatwebclient/ChatClient/obj/*
