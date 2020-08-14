@@ -11,6 +11,7 @@
     2.5json序列化和反序列化
         网络服务器和客户端之间通讯需要序列化和反序列化技术，实现序列化和反序列化的技术很多，有protobuf、xml、json，在这个项目中使用json对数据进行序列化和反序列化。
     2.6CMake构建编译环境
+    2.7ASP.Net编程实现Web客户端与服务端通信
 
 3.项目功能
     3.1客户端新用户注册
@@ -58,6 +59,12 @@
     7.7 启动redis服务 /usr/bin/redis-server
     7.8 启动mysql服务 /usr/bin/mysql
     7.9 启动Chat服务 服务端:./ChatServer 127.0.0.1 6000 客户端:./ChatClient 127.0.0.1 8000
+
+8.Web客户端使用到的知识点
+    8.1使用HttpWebResponse/WebClient类与服务端进行HTTP通信
+    8.2使用JavaScriptSerializer对发送的Json数据进行序列化
+    8.3使用第三方库Newtonsoft.Json对接收到的Json数据进行反序列化
+        使用第三方库Newtonsoft.Json需要手动安装该库，安装该库可以再VS NuGet上安装，命令Install-Package Newtonsoft.Json -Version 8.0.1；如果网速比较慢，可以选择离线安装，下载newtonsoft.json.8.0.1.nupkg文件，然后再VS程序包管理控制台上使用命令Install-Package Newtonsoft.Json -Version 8.0.1 -Source F:\源文件\EntityFrame安装，安装完成后，在VS引用目录下有Newtonsoft.Json包
 
  x.遗留问题
     x.1实现客户端非Http通信，Web使用Http通信，需要在服务端区分二者
