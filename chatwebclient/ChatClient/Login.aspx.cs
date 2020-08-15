@@ -26,22 +26,6 @@ namespace ChatClient
         public int msgid { get; set; }
         public int id { get; set; }
         public string name { get; set; }
-        /*Note:服务端返回friend信息是字符串的形式*/
-        public List<string> friends { get; set; }
-        /*Note:服务端返回group信息是字符串的形式*/
-        public List<string> groups { get; set; }
-    }
-    class FriendsInfo
-    {
-        public int id { get; set; }
-        public string name { get; set; }
-        public string state { get; set; }
-    }
-    public class GroupsInfo
-    {
-        public int id { get; set; }
-        public string groupname { get; set; }
-        public string groupdesc { get; set; }
     }
     public partial class Login : System.Web.UI.Page
     {
@@ -173,25 +157,8 @@ namespace ChatClient
                 LoginReplyInfo LoginReplyData = JsonConvert.DeserializeObject<LoginReplyInfo>(DataBuff);
                 if (LoginReplyData.errno == 0)
                 {
-                    if (LoginReplyData.friends != null)
-                    {
-                        List<string> Friends = LoginReplyData.friends;
-                        foreach (string Item in Friends)
-                        {
-                            //FriendsInfo fellow = JsonParserJss.Deserialize<FriendsInfo>(Item);
-                            FriendsInfo fellow = JsonConvert.DeserializeObject<FriendsInfo>(Item);
-                        }
-                    }
-                    if (LoginReplyData.groups != null)
-                    {
-                        List<string> Groups = LoginReplyData.groups;
-                        foreach (string Item in Groups)
-                        {
-                            //GroupsInfo group = JsonParserJss.Deserialize<GroupsInfo>(Item);
-                            GroupsInfo group = JsonConvert.DeserializeObject<GroupsInfo>(Item);
-                        }
-                    }
-                    Response.Redirect("ChatLobby.aspx?PageFrom=Login&UserID=" + loginInfo.id.ToString(), false);
+                    Response.Redirect("ChatLobby.aspx?PageFrom=Login&UserID=" + loginInfo.id.ToString()
+                     + "&UserName=" + LoginReplyData.name, false);
                 }
                 else 
                 {
@@ -207,7 +174,7 @@ namespace ChatClient
         {
             System.Diagnostics.Debug.WriteLine("LinkBtnToRegisterClick");
             Response.Write("LinkBtnToRegisterClick");
-            Response.Redirect("Register.aspx");
+            Response.Redirect("Register.aspx", false);
         }
     }
 }

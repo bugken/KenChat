@@ -49,7 +49,7 @@ namespace ChatClient
         }
         protected void BtnLinkToLoginClick(object sender, EventArgs e)
         {
-            Response.Redirect("Login.aspx");
+            Response.Redirect("Login.aspx", false);
         }
         private bool RegisterByWebClient(ref string DataBuff)
         {
@@ -89,7 +89,8 @@ namespace ChatClient
                 if (registerReplyData.errno == 0)
                 {
                     string ID = registerReplyData.id.ToString();
-                    Response.Redirect("ChatLobby.aspx?PageFrom=Register&UserID=" + ID, false);
+                    Response.Redirect("ChatLobby.aspx?PageFrom=Register&UserID=" + ID
+                        + "&UserName=" + resisterInfo.name, false);
                 }
                 else
                 {

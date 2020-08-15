@@ -14,9 +14,11 @@ namespace ChatClient
             System.Diagnostics.Debug.WriteLine("From Page Register");
             string PageSource = Request["PageFrom"];
             string UserID = Request["UserID"];
-            if (UserID != null && PageSource != null)
+            string UserName = Request["UserName"];
+            if (UserID != null && PageSource != null && UserName != null)
             {
                 System.Diagnostics.Debug.WriteLine("UserID:" + UserID);
+                System.Diagnostics.Debug.WriteLine("UserName:" + UserName);
                 System.Diagnostics.Debug.WriteLine("From Page Login" + PageSource);
                 if (PageSource == "Login")
                 {
