@@ -191,7 +191,7 @@ namespace ChatClient
                             GroupsInfo group = JsonConvert.DeserializeObject<GroupsInfo>(Item);
                         }
                     }
-                    Response.Redirect("ChatLobby.aspx");
+                    Response.Redirect("ChatLobby.aspx?PageFrom=Login&UserID=" + loginInfo.id.ToString(), false);
                 }
                 else 
                 {

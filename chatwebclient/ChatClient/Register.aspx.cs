@@ -88,7 +88,8 @@ namespace ChatClient
                 RegisterReplyInfo registerReplyData = JsonConvert.DeserializeObject<RegisterReplyInfo>(RegisterBuff);
                 if (registerReplyData.errno == 0)
                 {
-                    Response.Redirect("ChatLobby.aspx", false);
+                    string ID = registerReplyData.id.ToString();
+                    Response.Redirect("ChatLobby.aspx?PageFrom=Register&UserID=" + ID, false);
                 }
                 else
                 {
