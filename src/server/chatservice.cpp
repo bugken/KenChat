@@ -151,61 +151,6 @@ void ChatService::login(const TcpConnectionPtr &conn, json &js, Timestamp time)
             response["id"] = user.getId();
             response["name"] = user.getName();
 
-            //查询用户的好友信息
-            vector<User> vecUsers = _friendModel.queryFriend(user.getId());
-            if(!vecUsers.empty())
-            {
-                vector<string> vecStr; 
-                for (User &user : vecUsers)
-                {
-                    json js;
-                    js["id"] = user.getId();
-                    js["name"] = user.getName();
-                    js["state"] = user.getState();
-                    vecStr.push_back(js.dump());
-                }
-                response["friends"] = vecStr;
-            }
-            //查询该用户是否有离线消息
-            vector<string> vecMsg = _offlineMsgModel.query(user.getId());
-            if (!vecMsg.empty())
-            {
-               response["offlinemessage"] = vecMsg;
-            }
-            //读取用户的离线消息后删除离线消息
-            _offlineMsgModel.remove(user.getId());
-
-         	//查询用户所在的组以及组成员
-            vector<Group> vecGroup = _groupModel.queryGroups(user.getId());
-            if (!vecGroup.empty())
-            {
-                json jsGroup, jsUses;
-                vector<string> vecMsg, vecStrUsers;;
-                GroupUser groupUser;
-                vector<GroupUser> vectUsers;
-                for (Group& group : vecGroup)
-                {
-                    jsGroup["id"] = group.getId();
-                    jsGroup["groupname"] = group.getName();
-                    jsGroup["groupdesc"] = group.getDesc();
-                    vectUsers = group.getVecUsers();
-                    if (!vectUsers.empty())
-                    {
-                        for (GroupUser & var : vectUsers)
-                        {
-                            jsUses["id"] = var.getId();
-                            jsUses["name"] = var.getName();
-                            jsUses["state"] = var.getState();
-                            jsUses["role"] = var.getRole();
-                            vecStrUsers.push_back(jsUses.dump());
-                        }
-                        jsGroup["users"] = vecStrUsers;
-                    }
-                    vecMsg.push_back(jsGroup.dump());
-                }
-                response["groups"] = vecMsg;
-            }   
-
             //登录成功，更新用户状态
             user.setState("online");
             _userModel.updateState(user);
