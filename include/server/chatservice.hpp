@@ -43,6 +43,12 @@ public:
     void joinGroup(const TcpConnectionPtr & conn, json &js, Timestamp time);
     //群聊
     void groupChat(const TcpConnectionPtr & conn, json &js, Timestamp time);
+    //获取离线消息
+    void getOfflineMessage(const TcpConnectionPtr &conn, json &js, Timestamp time);
+    //获取Friends
+    void getFriends(const TcpConnectionPtr &conn, json &js, Timestamp time);
+    //获取Groups
+    void getGroups(const TcpConnectionPtr &conn, json &js, Timestamp time);
     //从redis消息队列中取订阅的消息
     void handleRedisSubscibeMessage(int userid, string msg);
     //获取消息对应的处理器

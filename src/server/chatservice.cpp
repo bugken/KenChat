@@ -30,6 +30,9 @@ ChatService::ChatService()
     _msgHandlerMap.insert(pair<int, MsgHandler>(CREATE_GROUP_MSG, bind(&ChatService::createGroup, this, _1, _2, _3)));
     _msgHandlerMap.insert(pair<int, MsgHandler>(JOIN_GROUP_MSG, bind(&ChatService::joinGroup, this, _1, _2, _3)));
     _msgHandlerMap.insert(pair<int, MsgHandler>(GROUP_CHAT_MSG, bind(&ChatService::groupChat, this, _1, _2, _3)));
+    _msgHandlerMap.insert(pair<int, MsgHandler>(OFFLINE_MSG, bind(&ChatService::getOfflineMessage, this, _1, _2, _3)));
+    _msgHandlerMap.insert(pair<int, MsgHandler>(FRIENDS_MSG, bind(&ChatService::getFriends, this, _1, _2, _3)));
+    _msgHandlerMap.insert(pair<int, MsgHandler>(GROUPS_MSG, bind(&ChatService::getGroups, this, _1, _2, _3)));
 
     //连接redis服务器
     if (_redis.connect())
@@ -295,6 +298,92 @@ void ChatService::groupChat(const TcpConnectionPtr &conn, json &js, Timestamp ti
             _offlineMsgModel.insert(userid, js.dump());
         }
     }
+}
+//获取离线消息
+void ChatService::getOfflineMessage(const TcpConnectionPtr &conn, json &js, Timestamp time)
+{
+    LOG_INFO << "get offlien message.";
+    json response;
+    int id = js["id"].get<int>();
+
+    //查询该用户是否有离线消息
+    vector<string> vecMsg = _offlineMsgModel.query(id);
+    if (!vecMsg.empty())
+    {
+        response["offlinemessage"] = vecMsg;
+    }
+    //读取用户的离线消息后删除离线消息
+    _offlineMsgModel.remove(id);
+
+    response["msgid"] = OFFLINE_MSG_ACK;
+    sendWithHttp(conn, response.dump());
+}
+//获取groups
+void ChatService::getGroups(const TcpConnectionPtr &conn, json &js, Timestamp time)
+{
+    LOG_INFO << "get groups.";
+    json response;
+    int id = js["id"].get<int>();
+
+    //查询用户所在的组以及组成员
+    vector<Group> vecGroup = _groupModel.queryGroups(id);
+    if (!vecGroup.empty())
+    {
+        json jsGroup, jsUses;
+        vector<string> vecMsg, vecStrUsers;;
+        GroupUser groupUser;
+        vector<GroupUser> vectUsers;
+        for (Group& group : vecGroup)
+        {
+            jsGroup["id"] = group.getId();
+            jsGroup["groupname"] = group.getName();
+            jsGroup["groupdesc"] = group.getDesc();
+            vectUsers = group.getVecUsers();
+            if (!vectUsers.empty())
+            {
+                for (GroupUser & var : vectUsers)
+                {
+                    jsUses["id"] = var.getId();
+                    jsUses["name"] = var.getName();
+                    jsUses["state"] = var.getState();
+                    jsUses["role"] = var.getRole();
+                    vecStrUsers.push_back(jsUses.dump());
+                }
+                jsGroup["users"] = vecStrUsers;
+            }
+            vecMsg.push_back(jsGroup.dump());
+        }
+        response["groups"] = vecMsg;
+    }   
+
+    response["msgid"] = GROUPS_MSG_ACK;
+    sendWithHttp(conn, response.dump());
+}
+//获取Friends
+void ChatService::getFriends(const TcpConnectionPtr &conn, json &js, Timestamp time)
+{
+    LOG_INFO << "do login service.";
+    json response;
+    int id = js["id"].get<int>();
+
+    //查询用户的好友信息
+    vector<User> vecUsers = _friendModel.queryFriend(id);
+    if(!vecUsers.empty())
+    {
+        vector<string> vecStr; 
+        for (User &user : vecUsers)
+        {
+            json js;
+            js["id"] = user.getId();
+            js["name"] = user.getName();
+            js["state"] = user.getState();
+            vecStr.push_back(js.dump());
+        }
+        response["friends"] = vecStr;
+    }
+    
+    response["msgid"] = FRIENDS_MSG_ACK;
+    sendWithHttp(conn, response.dump());
 }
 //从redis消息队列中取订阅的消息
 void ChatService::handleRedisSubscibeMessage(int userid, string msg)
