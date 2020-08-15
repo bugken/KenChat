@@ -40,7 +40,7 @@
             text-decoration:none
         }
         body{
-            background-image:url("./BackGround/rbg.jpg");
+            background-image:url("./BackGround/bg.jpg");
         }
     </style>
 </head>

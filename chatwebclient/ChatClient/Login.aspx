@@ -43,7 +43,7 @@
             color:white;
         }
         body{
-            background-image: url("./BackGround/lbg.jpg");
+            background-image: url("./BackGround/bg.jpg");
         }
     </style>
 </head>
