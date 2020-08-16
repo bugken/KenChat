@@ -407,6 +407,7 @@ void ChatService::handleRedisSubscibeMessage(int userid, string msg)
 void ChatService::replyWithNOError(const TcpConnectionPtr &conn)
 {
     json response;
+    response["msgid"] = NO_ERROR_MSG;
     response["errno"] = 0;
     response["errmsg"] = "无错误信息.";
 
