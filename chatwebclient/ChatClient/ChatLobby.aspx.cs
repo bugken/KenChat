@@ -122,7 +122,10 @@ namespace ChatClient
                     {
                         OfflineMsg message = JsonParserJss.Deserialize<OfflineMsg>(Item);
                         //显示到ChatLobby
-
+                        string offlineMsg = "[" + message.time + "]" + "[" + message.name 
+                                             + "(" + message.id.ToString() + ")" 
+                                             + "]:" + message.message;
+                        TxtAllMsg.Text = TxtAllMsg.Text + offlineMsg + "\r\n";
                     }
                 }
             }
