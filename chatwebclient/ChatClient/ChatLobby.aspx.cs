@@ -63,8 +63,6 @@ namespace ChatClient
         private JavaScriptSerializer JsonParserJss;
         private QueryMsg queryMsg;
         private Client client;
-        private HttpWebRequest httpWebRequest;
-        private StreamWriter streamWriter;
         public ChatLobby()
         {
             System.Diagnostics.Debug.WriteLine("ChatLobby");
@@ -80,7 +78,7 @@ namespace ChatClient
             queryMsg.msgid = MsgID;
 
             bool Result = true;
-            httpWebRequest = (HttpWebRequest)WebRequest.Create(URLs);
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(URLs);
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.UserAgent = null;
@@ -124,7 +122,7 @@ namespace ChatClient
                     {
                         OfflineMsg message = JsonParserJss.Deserialize<OfflineMsg>(Item);
                         //显示到ChatLobby
-                        System.Diagnostics.Debug.WriteLine(message);
+
                     }
                 }
             }
@@ -179,9 +177,6 @@ namespace ChatClient
                     {
                         GroupMsg message = JsonParserJss.Deserialize<GroupMsg>(Item);
                         //显示到ChatLobby
-                        System.Diagnostics.Debug.WriteLine(message.id);
-                        System.Diagnostics.Debug.WriteLine(message.groupname);
-                        System.Diagnostics.Debug.WriteLine(message.groupdesc);
                         ListGroups.Items.Clear();
                         ListGroups.Items.Add(message.id.ToString() + ":" + message.groupname);
                     }
@@ -227,6 +222,7 @@ namespace ChatClient
         protected void BtnSendClick(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("BtnSendClick");
+            ShowOfflineMsg();
         }
     }
 }
