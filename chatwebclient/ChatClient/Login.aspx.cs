@@ -32,7 +32,7 @@ namespace ChatClient
         private string URLs = "http://192.168.107.128:8000";
         private JavaScriptSerializer JsonParserJss;
         private LoginInfo loginInfo;
-        private HttpWebRequest httpWebRequest;
+        
         public Login()
         {
             System.Diagnostics.Debug.WriteLine("Login");
@@ -41,12 +41,6 @@ namespace ChatClient
             loginInfo.id = 0;
             loginInfo.password = "123456";
             JsonParserJss = new JavaScriptSerializer();
-
-            httpWebRequest = (HttpWebRequest)WebRequest.Create(URLs);
-            httpWebRequest.Method = "POST";
-            httpWebRequest.ContentType = "application/json";
-            httpWebRequest.UserAgent = null;
-            httpWebRequest.Timeout = 1000;
         }
         ~Login()
         {
@@ -57,6 +51,11 @@ namespace ChatClient
             System.Diagnostics.Debug.WriteLine("LoginByHttpWebRequestAndStream");
 
             bool Result = true;
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(URLs);
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json";
+            httpWebRequest.UserAgent = null;
+            httpWebRequest.Timeout = 1000;
             using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
             {
                 string json = JsonParserJss.Serialize(loginInfo);
@@ -64,7 +63,6 @@ namespace ChatClient
                 streamWriter.Flush();
                 streamWriter.Close();
             }
-
             try
             {
                 HttpWebResponse httpResponse = (HttpWebResponse)httpWebRequest.GetResponse();
@@ -88,8 +86,12 @@ namespace ChatClient
             bool Result = true;
             string json = JsonParserJss.Serialize(loginInfo);
             byte[] postBytes = Encoding.ASCII.GetBytes(json);
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(URLs);
+            httpWebRequest.Method = "POST";
+            httpWebRequest.ContentType = "application/json";
+            httpWebRequest.UserAgent = null;
+            httpWebRequest.Timeout = 1000;
             httpWebRequest.ContentLength = postBytes.Length;
-
             try
             {
                 using (Stream reqStream = httpWebRequest.GetRequestStream())
