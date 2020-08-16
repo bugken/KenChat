@@ -124,7 +124,7 @@ namespace ChatClient
                         //显示到ChatLobby
                         string offlineMsg = "[" + message.time + "]" + "[" + message.name 
                                              + "(" + message.id.ToString() + ")" 
-                                             + "]:" + message.message;
+                                             + "][离线消息]:" + message.message;
                         TxtAllMsg.Text = TxtAllMsg.Text + offlineMsg + "\r\n";
                     }
                 }
@@ -193,6 +193,12 @@ namespace ChatClient
 
             return Result;
         }
+        private bool OneChat()
+        {
+            bool Result = true;
+
+            return Result;
+        }
         protected void Page_Load(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("Page_Load");
@@ -210,7 +216,7 @@ namespace ChatClient
                 if (PageSource == "Login")
                 {
                     //显示离线消息
-                    //ShowOfflineMsg();
+                    ShowOfflineMsg();
                     //显示Friends信息
                     ShowFriendsMsg();
                     //显示Groups信息
@@ -225,7 +231,12 @@ namespace ChatClient
         protected void BtnSendClick(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("BtnSendClick");
-            ShowOfflineMsg();
+            string SendMsg = TxtMsgSend.Text;
+            TxtMsgSend.Text = "";
+
+            TxtAllMsg.Text = TxtAllMsg.Text + SendMsg + "\r\n";
+
+            //发送消息给User
         }
     }
 }
