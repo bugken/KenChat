@@ -26,7 +26,7 @@ namespace ChatClient
         public int msgid { get; set; }
         public List<string> offlinemessage { get; set; }
     }
-    public class OfflineMsg
+    public class ChatMsg
     {
         public int toid { get; set; }
         public int id { get; set; }
@@ -120,7 +120,7 @@ namespace ChatClient
                 {
                     foreach (string Item in strMessageBuff.offlinemessage)
                     {
-                        OfflineMsg message = JsonParserJss.Deserialize<OfflineMsg>(Item);
+                        ChatMsg message = JsonParserJss.Deserialize<ChatMsg>(Item);
                         //显示到ChatLobby
                         string offlineMsg = "[" + message.time + "]" + "[" + message.name 
                                              + "(" + message.id.ToString() + ")" 
