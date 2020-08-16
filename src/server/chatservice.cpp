@@ -96,6 +96,9 @@ void ChatService::oneChat(const TcpConnectionPtr &conn, json &js, Timestamp time
     TcpConnectionPtr clientConn;
     int toid = js["toid"].get<int>();
 
+    //先回复一个无错误信息给Web端，防止超时
+    replyWithNOError(conn);
+
     {
         lock_guard<mutex> lock(_connMutex);
         auto it = _userConnMap.find(toid);
@@ -399,6 +402,15 @@ void ChatService::handleRedisSubscibeMessage(int userid, string msg)
     }
     //存储该用户的离线消息
     _offlineMsgModel.insert(userid, msg);
+}
+//回复无错误信息
+void ChatService::replyWithNOError(const TcpConnectionPtr &conn)
+{
+    json response;
+    response["errno"] = 0;
+    response["errmsg"] = "无错误信息.";
+
+    sendWithHttp(conn, response.dump());
 }
 //封装成http消息发出
 void ChatService::sendWithHttp(const TcpConnectionPtr &conn, string jsonBuff)

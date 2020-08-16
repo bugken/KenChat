@@ -59,6 +59,8 @@ public:
     void reset();
     //封装成http消息发出
     void sendWithHttp(const TcpConnectionPtr &conn, string jsonBuff);
+    //回复无错误信息
+    void replyWithNOError(const TcpConnectionPtr &conn);
 private:
     ChatService();
     //存储消息ID和其对应的业务处理方法，此成员不需要线程安全，因为启动时候已经初始化好
