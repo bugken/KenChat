@@ -22,13 +22,13 @@ namespace ChatClient {
         protected global::System.Web.UI.HtmlControls.HtmlForm form1;
         
         /// <summary>
-        /// TextUserID 控件。
+        /// TxtUserID 控件。
         /// </summary>
         /// <remarks>
         /// 自动生成的字段。
         /// 若要进行修改，请将字段声明从设计器文件移到代码隐藏文件。
         /// </remarks>
-        protected global::System.Web.UI.WebControls.TextBox TextUserID;
+        protected global::System.Web.UI.WebControls.TextBox TxtUserID;
         
         /// <summary>
         /// TxtChatStatus 控件。

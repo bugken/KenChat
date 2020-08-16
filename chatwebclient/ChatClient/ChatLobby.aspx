@@ -10,14 +10,16 @@
     <style>
         form{
             color:#575454;  
-            width: 720px;
-            height: 600px;
-            margin: auto;
+            width: 767px;
+            height: 650px;
             font-size:15px;
             margin-top:110px;
-	    }
-        #TextUserID{
-            margin-left:450px;
+            margin-left: auto;
+            margin-right: auto;
+            margin-bottom: auto;
+        }
+        #TxtUserID{
+            margin-left:517px;
         }
         #TxtMsgSend{
             text-align: left;
@@ -55,7 +57,7 @@
 <body>
     <form id="form1" runat="server">
         <div style="margin-top:10px">
-            <asp:TextBox ID="TextUserID" runat="server" Width="200px" Height="30px" Font-Size="Large"></asp:TextBox>
+            <asp:TextBox ID="TxtUserID" runat="server" Width="237px" Height="30px" Font-Size="Large"></asp:TextBox>
         </div>
         <div style="margin-top:40px">
             <asp:TextBox ID="TxtChatStatus" runat="server" Width="233px" Height="30px" Font-Size="Large"></asp:TextBox>
@@ -65,14 +67,14 @@
                 <asp:TextBox ID="TxtAllMsg" runat="server" Height="370px" Width="529px" ReadOnly="True" TextMode="MultiLine" Font-Size="Large"></asp:TextBox>
                 <asp:TextBox ID="TxtMsgSend" runat="server" Height="95px" Width="529px" TextMode="MultiLine" Font-Size="Large"></asp:TextBox>
             </div>
-            <div style="width:160px; height:auto; float:left; display:inline">  
+            <div style="width:215px; height:auto; float:left; display:inline;">  
                 <div style="margin:5px;">
                     <asp:Label ID="LabelFriends" runat="server" Text="好友列表" Font-Size="Large" Width="80px" BorderStyle="Solid"></asp:Label>        
-                    <asp:ListBox ID="ListFriends" runat="server" Width="150px" Font-Size="Large" Height="205px"></asp:ListBox>
+                    <asp:ListBox ID="ListFriends" runat="server" Width="205px" Font-Size="Large" Height="205px"></asp:ListBox>
                 </div>
                 <div style="margin:5px;">
                     <asp:Label ID="LabelGroups" runat="server" Text="群组列表" Font-Size="Large" Width="80px" BorderStyle="Solid"></asp:Label>
-                    <asp:ListBox ID="ListGroups" runat="server" Width="150px" Font-Size="Large" Height="205px"></asp:ListBox>
+                    <asp:ListBox ID="ListGroups" runat="server" Width="205px" Font-Size="Large" Height="205px"></asp:ListBox>
                 </div>
             </div>
         </div>
