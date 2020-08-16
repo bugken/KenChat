@@ -70,7 +70,7 @@
             <div style="width:215px; height:auto; float:left; display:inline;">  
                 <div style="margin:5px;">
                     <asp:Label ID="LabelFriends" runat="server" Text="好友列表" Font-Size="Large" Width="80px" BorderStyle="Solid"></asp:Label>        
-                    <asp:ListBox ID="ListFriends" runat="server" Width="205px" Font-Size="Large" Height="205px"></asp:ListBox>
+                    <asp:ListBox ID="ListFriends" runat="server" Width="205px" Font-Size="Large" Height="205px" AutoPostBack="true" OnSelectedIndexChanged="ListFriends_SelectedIndexChanged"></asp:ListBox>
                 </div>
                 <div style="margin:5px;">
                     <asp:Label ID="LabelGroups" runat="server" Text="群组列表" Font-Size="Large" Width="80px" BorderStyle="Solid"></asp:Label>

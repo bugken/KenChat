@@ -15,6 +15,7 @@ namespace ChatClient
     {
         public int UserID { get; set; }
         public string UserName { get; set; }
+        public int ToUserID { get; set; }
     }
     public class QueryMsg
     {
@@ -148,11 +149,11 @@ namespace ChatClient
                 FriendMsgBuff strMessageBuff = JsonParserJss.Deserialize<FriendMsgBuff>(friendsbuff);
                 if (strMessageBuff.friends != null)
                 {
+                    ListFriends.Items.Clear();
                     foreach (string Item in strMessageBuff.friends)
                     {
                         FriendMsg message = JsonParserJss.Deserialize<FriendMsg>(Item);
                         //显示到ChatLobby
-                        ListFriends.Items.Clear();
                         ListFriends.Items.Add(message.id.ToString() + ":" + message.name + ":" + message.state);
                     }
                 }
@@ -176,11 +177,11 @@ namespace ChatClient
                 GroupMsgBuff strMessageBuff = JsonParserJss.Deserialize<GroupMsgBuff>(groupsbuff);
                 if (strMessageBuff.groups != null)
                 {
+                    ListGroups.Items.Clear();
                     foreach (string Item in strMessageBuff.groups)
                     {
                         GroupMsg message = JsonParserJss.Deserialize<GroupMsg>(Item);
                         //显示到ChatLobby
-                        ListGroups.Items.Clear();
                         ListGroups.Items.Add(message.id.ToString() + ":" + message.groupname);
                     }
                 }
@@ -193,7 +194,7 @@ namespace ChatClient
 
             return Result;
         }
-        private bool OneChat()
+        private bool OneChat(string Message, int UserID)
         {
             bool Result = true;
 
@@ -205,7 +206,7 @@ namespace ChatClient
             string PageSource = Request["PageFrom"];
             string UserID = Request["UserID"];
             string UserName = Request["UserName"];
-            if (UserID != null && PageSource != null && UserName != null)
+            if (IsPostBack == false && UserID != null && PageSource != null && UserName != null)
             {
                 System.Diagnostics.Debug.WriteLine("From Page " + PageSource);
 
@@ -237,6 +238,20 @@ namespace ChatClient
             TxtAllMsg.Text = TxtAllMsg.Text + SendMsg + "\r\n";
 
             //发送消息给User
+            OneChat(SendMsg, client.ToUserID);
+        }
+        protected void ListFriends_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("ListFriends_SelectedIndexChanged");
+            if(IsPostBack == true)
+            {
+                string SelectedUser = ListFriends.SelectedItem.Text;
+                string[] ArrayUserInfo = SelectedUser.Split(':');
+
+                string ChatStatusInfo = "你正在和用户" + ArrayUserInfo[1] + "(" + ArrayUserInfo[0] + ")" + "聊天";
+                TxtChatStatus.Text = ChatStatusInfo;
+                client.ToUserID = int.Parse(ArrayUserInfo[0]);
+            }
         }
     }
 }
