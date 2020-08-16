@@ -394,7 +394,7 @@ void addfriend(int clientfd, string msg)
     int friendid = atoi(msg.c_str());
     json context;
     context["msgid"] = ADD_FRIEND_MSG;
-    context["id"] = g_currentUser.getId();
+    context["userid"] = g_currentUser.getId();
     context["friendid"] = friendid;
     string buffer = context.dump();
 
