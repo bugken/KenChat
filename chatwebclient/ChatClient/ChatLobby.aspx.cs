@@ -11,6 +11,12 @@ using System.Text;
 
 namespace ChatClient
 {
+    public class KeepAliveMsg
+    {
+        public int msgid { get; set; }
+        public int errno { get; set; }
+        public string errmsg { get; set;}
+    }
     public class QueryMsg
     {
         public int msgid { get; set;}
@@ -59,6 +65,7 @@ namespace ChatClient
         private static int m_UserID = 0;
         private static string m_UserName = "";
         private static int m_ToUserID = 0;
+        private static WebClient client = new WebClient();
         private bool QueryInfo(ref string DataBuff, int MsgID)
         {
             System.Diagnostics.Debug.WriteLine("QueryInfo");
@@ -197,7 +204,6 @@ namespace ChatClient
             SendMsg.time = DateTime.Now.ToString("yyyy-MM-dd") + " " + DateTime.Now.ToLongTimeString().ToString();
 
             string ReplyBuff = "";
-            WebClient client = new WebClient();
             byte[] jsonData = Encoding.UTF8.GetBytes(m_JsonParserJss.Serialize(SendMsg));
             client.Headers.Add("Content-Type", "application/json"); //采取POST方式必须加的header
             client.Headers.Add("ContentLength", jsonData.Length.ToString());
@@ -273,6 +279,23 @@ namespace ChatClient
         protected void KeepAliveTimerTick(object sender, EventArgs e)
         {
             System.Diagnostics.Debug.WriteLine("KeepAliveTimerTick");
+            KeepAliveMsg SendMsg = new KeepAliveMsg();
+
+            string ReplyBuff = "";
+            byte[] jsonData = Encoding.UTF8.GetBytes(m_JsonParserJss.Serialize(SendMsg));
+            client.Headers.Add("Content-Type", "application/json"); //采取POST方式必须加的header
+            client.Headers.Add("ContentLength", jsonData.Length.ToString());
+            try
+            {
+                byte[] responseData = client.UploadData(m_URLs, "POST", jsonData); //得到返回字符流
+                ReplyBuff = Encoding.UTF8.GetString(responseData); //解码
+            }
+            catch (Exception ex)
+            {
+                //Response.Write("<script>alert('(" + ex.GetType().Name + ")" + ex.Message + "')</script>");
+                ReplyBuff = ex.Message;
+                System.Diagnostics.Debug.WriteLine("KeepAliveTimerTick:" + ex.Message);
+            }
         }
     }
 }

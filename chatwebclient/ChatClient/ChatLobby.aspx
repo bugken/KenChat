@@ -58,7 +58,7 @@
     <form id="form1" runat="server">
         <div style="margin-top:10px">
             <asp:ScriptManager ID="ScriptManager1" runat="server" />
-            <asp:Timer ID="KeepAliveTimer" runat="server" Interval="500" OnTick="KeepAliveTimerTick"></asp:Timer>
+            <asp:Timer ID="KeepAliveTimer" runat="server" Interval="500" OnTick="KeepAliveTimerTick" Enabled="False"></asp:Timer>
             <asp:TextBox ID="TxtUserID" runat="server" Width="237px" Height="30px" Font-Size="Large"></asp:TextBox>
         </div>
         <div style="margin-top:40px">
