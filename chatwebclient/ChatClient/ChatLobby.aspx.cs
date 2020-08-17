@@ -59,10 +59,6 @@ namespace ChatClient
         private static int m_UserID = 0;
         private static string m_UserName = "";
         private static int m_ToUserID = 0;
-        public ChatLobby()
-        {
-            System.Diagnostics.Debug.WriteLine("ChatLobby");
-        }
         private bool QueryInfo(ref string DataBuff, int MsgID)
         {
             System.Diagnostics.Debug.WriteLine("QueryInfo");
@@ -272,6 +268,11 @@ namespace ChatClient
                 TxtChatStatus.Text = ChatStatusInfo;
                 m_ToUserID = int.Parse(ArrayUserInfo[0]);
             }
+        }
+
+        protected void KeepAliveTimerTick(object sender, EventArgs e)
+        {
+            System.Diagnostics.Debug.WriteLine("KeepAliveTimerTick");
         }
     }
 }
