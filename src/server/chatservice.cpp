@@ -22,6 +22,7 @@ ChatService *ChatService::instance()
 //构造方法中注册消息以及对应的回调操作
 ChatService::ChatService()
 {
+    _msgHandlerMap.insert(pair<int, MsgHandler>(NO_ERROR_MSG, bind(&ChatService::NoErrorAndKeepAlive, this, _1)));
     _msgHandlerMap.insert(pair<int, MsgHandler>(LOGIN_MSG, bind(&ChatService::login, this, _1, _2, _3)));
     _msgHandlerMap.insert(pair<int, MsgHandler>(REG_MSG, bind(&ChatService::reg, this, _1, _2, _3)));
     _msgHandlerMap.insert(pair<int, MsgHandler>(LOGINOUT_MSG, bind(&ChatService::loginout, this, _1, _2, _3)));
@@ -410,6 +411,16 @@ void ChatService::replyWithNOError(const TcpConnectionPtr &conn)
     response["msgid"] = NO_ERROR_MSG;
     response["errno"] = 0;
     response["errmsg"] = "无错误信息.";
+
+    sendWithHttp(conn, response.dump());
+}
+//回复无错误信息或者来自Web的保活消息
+void ChatService::NoErrorAndKeepAlive(const TcpConnectionPtr &conn)
+{
+    json response;
+    response["msgid"] = NO_ERROR_MSG;
+    response["errno"] = 0;
+    response["errmsg"] = "无错误信息或者Web保活信息.";
 
     sendWithHttp(conn, response.dump());
 }
