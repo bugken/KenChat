@@ -4,7 +4,7 @@
 /*server和client的公共文件*/
 enum EnMsgType
 {
-    NO_ERROR_MSG = 0,      //登录消息
+    NO_ERROR_MSG = 0,      //无错误消息以及来自WebClient的保活消息
     LOGIN_MSG = 1,      //登录消息
     LOGIN_MSG_ACK,
     REG_MSG,            //注册消息
