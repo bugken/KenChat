@@ -11,12 +11,6 @@ using System.Text;
 
 namespace ChatClient
 {
-    public class Client
-    {
-        public int UserID { get; set; }
-        public string UserName { get; set; }
-        public int ToUserID { get; set; }
-    }
     public class QueryMsg
     {
         public int msgid { get; set;}
@@ -60,33 +54,31 @@ namespace ChatClient
     }
     public partial class ChatLobby : System.Web.UI.Page
     {
-        private string URLs = "http://192.168.107.128:8000";
-        private JavaScriptSerializer JsonParserJss;
-        private QueryMsg queryMsg;
-        private Client client;
+        private string m_URLs = "http://192.168.107.128:8000";
+        private JavaScriptSerializer m_JsonParserJss = new JavaScriptSerializer();
+        private static int m_UserID = 0;
+        private static string m_UserName = "";
+        private static int m_ToUserID = 0;
         public ChatLobby()
         {
             System.Diagnostics.Debug.WriteLine("ChatLobby");
-
-            client = new Client();
-            queryMsg = new QueryMsg();
-            JsonParserJss = new JavaScriptSerializer();
         }
         private bool QueryInfo(ref string DataBuff, int MsgID)
         {
             System.Diagnostics.Debug.WriteLine("QueryInfo");
-            queryMsg.id = client.UserID;
+            QueryMsg queryMsg = new QueryMsg();
+            queryMsg.id = m_UserID;
             queryMsg.msgid = MsgID;
 
             bool Result = true;
-            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(URLs);
+            HttpWebRequest httpWebRequest = (HttpWebRequest)WebRequest.Create(m_URLs);
             httpWebRequest.Method = "POST";
             httpWebRequest.ContentType = "application/json";
             httpWebRequest.UserAgent = null;
             httpWebRequest.Timeout = 1000;
             using (var streamWriter = new StreamWriter(httpWebRequest.GetRequestStream()))
             {
-                string json = JsonParserJss.Serialize(queryMsg);
+                string json = m_JsonParserJss.Serialize(queryMsg);
                 streamWriter.Write(json);
                 streamWriter.Flush();
                 streamWriter.Close();
@@ -116,12 +108,12 @@ namespace ChatClient
             string offlinebuff = "";
             if (QueryInfo(ref offlinebuff, msgId))
             {
-                OfflineMsgBuff strMessageBuff = JsonParserJss.Deserialize<OfflineMsgBuff>(offlinebuff);
+                OfflineMsgBuff strMessageBuff = m_JsonParserJss.Deserialize<OfflineMsgBuff>(offlinebuff);
                 if (strMessageBuff.offlinemessage != null)
                 {
                     foreach (string Item in strMessageBuff.offlinemessage)
                     {
-                        ChatMsg message = JsonParserJss.Deserialize<ChatMsg>(Item);
+                        ChatMsg message = m_JsonParserJss.Deserialize<ChatMsg>(Item);
                         //显示到ChatLobby
                         string offlineMsg = "[" + message.time + "]" + "[" + message.name 
                                              + "(" + message.id.ToString() + ")" 
@@ -146,13 +138,13 @@ namespace ChatClient
             string friendsbuff = "";
             if (QueryInfo(ref friendsbuff, msgId))
             {
-                FriendMsgBuff strMessageBuff = JsonParserJss.Deserialize<FriendMsgBuff>(friendsbuff);
+                FriendMsgBuff strMessageBuff = m_JsonParserJss.Deserialize<FriendMsgBuff>(friendsbuff);
                 if (strMessageBuff.friends != null)
                 {
                     ListFriends.Items.Clear();
                     foreach (string Item in strMessageBuff.friends)
                     {
-                        FriendMsg message = JsonParserJss.Deserialize<FriendMsg>(Item);
+                        FriendMsg message = m_JsonParserJss.Deserialize<FriendMsg>(Item);
                         //显示到ChatLobby
                         ListFriends.Items.Add(message.id.ToString() + ":" + message.name + ":" + message.state);
                     }
@@ -174,13 +166,13 @@ namespace ChatClient
             string groupsbuff = "";
             if (QueryInfo(ref groupsbuff, msgId))
             {
-                GroupMsgBuff strMessageBuff = JsonParserJss.Deserialize<GroupMsgBuff>(groupsbuff);
+                GroupMsgBuff strMessageBuff = m_JsonParserJss.Deserialize<GroupMsgBuff>(groupsbuff);
                 if (strMessageBuff.groups != null)
                 {
                     ListGroups.Items.Clear();
                     foreach (string Item in strMessageBuff.groups)
                     {
-                        GroupMsg message = JsonParserJss.Deserialize<GroupMsg>(Item);
+                        GroupMsg message = m_JsonParserJss.Deserialize<GroupMsg>(Item);
                         //显示到ChatLobby
                         ListGroups.Items.Add(message.id.ToString() + ":" + message.groupname);
                     }
@@ -194,9 +186,36 @@ namespace ChatClient
 
             return Result;
         }
-        private bool OneChat(string Message, int UserID)
+        private bool OneChat(string Message)
         {
+            System.Diagnostics.Debug.WriteLine("OneChat");
+
             bool Result = true;
+
+            ChatMsg SendMsg = new ChatMsg();
+            SendMsg.msgid = 6;
+            SendMsg.id = m_UserID;
+            SendMsg.name = m_UserName;
+            SendMsg.message = Message;
+            SendMsg.toid = m_ToUserID;
+            SendMsg.time = DateTime.Now.ToString("yyyy-MM-dd") + " " + DateTime.Now.ToLongTimeString().ToString();
+
+            string ReplyBuff = "";
+            WebClient client = new WebClient();
+            byte[] jsonData = Encoding.UTF8.GetBytes(m_JsonParserJss.Serialize(SendMsg));
+            client.Headers.Add("Content-Type", "application/json"); //采取POST方式必须加的header
+            client.Headers.Add("ContentLength", jsonData.Length.ToString());
+            try
+            {
+                byte[] responseData = client.UploadData(m_URLs, "POST", jsonData); //得到返回字符流
+                ReplyBuff = Encoding.UTF8.GetString(responseData); //解码
+            }
+            catch (Exception ex)
+            {
+                Response.Write("<script>alert('(" + ex.GetType().Name + ")" + ex.Message + "')</script>");
+                ReplyBuff = ex.Message;
+                Result = false;
+            }
 
             return Result;
         }
@@ -210,8 +229,9 @@ namespace ChatClient
             {
                 System.Diagnostics.Debug.WriteLine("From Page " + PageSource);
 
-                client.UserID = int.Parse(UserID);
-                client.UserName = UserName;
+                m_UserID = int.Parse(UserID);
+                m_UserName = UserName;
+
                 TxtUserID.Text = "用户ID:" + UserID + " 用户名:" + UserName;
                 
                 if (PageSource == "Login")
@@ -238,7 +258,7 @@ namespace ChatClient
             TxtAllMsg.Text = TxtAllMsg.Text + SendMsg + "\r\n";
 
             //发送消息给User
-            OneChat(SendMsg, client.ToUserID);
+            OneChat(SendMsg);
         }
         protected void ListFriends_SelectedIndexChanged(object sender, EventArgs e)
         {
@@ -250,7 +270,7 @@ namespace ChatClient
 
                 string ChatStatusInfo = "你正在和用户" + ArrayUserInfo[1] + "(" + ArrayUserInfo[0] + ")" + "聊天";
                 TxtChatStatus.Text = ChatStatusInfo;
-                client.ToUserID = int.Parse(ArrayUserInfo[0]);
+                m_ToUserID = int.Parse(ArrayUserInfo[0]);
             }
         }
     }
